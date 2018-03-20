@@ -1,0 +1,101 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+
+body {
+    /* background-color: #38618C; */
+    background-color: #efefef;
+    font-family: 'Open Sans', sans-serif;
+    /* background: linear-gradient(to bottom, #38618C, white); */
+    padding: 0;
+    padding-bottom: 50px;
+    margin: 0
+}
+
+h1 {
+    color: #FFFFFF;
+    font-weight: bold;
+    margin-top: 0;
+}
+
+h2 {
+    margin-top: 0;
+    font-size: 1.5rem;
+}
+
+h2, h3, h4 {
+    font-weight: bold;
+    text-align: center;
+}
+
+#first {
+    flex-basis: 100%
+}
+.container-fluid {
+    /* padding: 2.5% 15%; */
+    /* max-width: 900px; */
+    /* margin: 20px auto;    */
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    /* margin-top: 0; */
+}
+
+.labels {
+    margin-top: 20px;
+    background-color: #efefef;
+    /* border: 1px solid black; */
+    padding: 2.5%;
+    border-radius: 5px;
+    flex-basis: 48.5%;
+}
+
+.upload {
+    flex-basis: 60%;
+    border: none ;
+    /* background-color: #fff; */
+}
+
+.myForm {
+    padding-top: 50px;;
+}
+
+.content {
+    margin-top: 50px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-content: center;
+    flex-wrap: wrap;
+}
+
+.images {
+    align-self: center;
+    background-color: #38618C;
+}
+
+.one {
+    display: none;
+}
+
+.img-thumbnail {
+    object-fit: cover;
+    width: 350px;
+    height: 350px;
+}
+
+table {
+    text-align: center;
+    margin-top: 50px;
+    font-size: 0.9rem;
+    background-color: #fff;
+}
+
+table, tr, th, td {
+    border: 1px solid black
+}
+
+@media only screen and (max-width: 800px) {
+    .labels {
+        flex-basis: 100%;
+    }
+}

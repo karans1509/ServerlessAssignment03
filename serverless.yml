@@ -1,0 +1,85 @@
+service: assignment03
+
+custom:
+  bucket: dropbox-demo
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  stage: dev
+  region: us-west-2
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:us-west-2:*:*"
+    - Effect: Allow
+      Action:
+        - s3:*
+      Resource: "*"
+
+functions:
+  upload:
+    handler: dropbox/upload.upload
+    events:
+      - s3:
+          bucket: ${self:custom.bucket}
+          event: s3:ObjectCreated:*
+  
+  remove:
+    handler: dropbox/remove.remove
+    events:
+      - s3:
+          bucket: ${self:custom.bucket}
+          event: s3:ObjectRemoved:*
+  
+  list:
+    handler: dropbox/list.list
+    events: 
+      - http:
+          path: objects
+          method: get
+          cors: true
+  
+  getModifications:
+    handler: dropbox/getModifications.getModifications
+    events: 
+      - http:
+          path: modifications
+          method: get
+          cors: true
+
+resources:
+  Resources:
+    # ListFilesTable:
+    #   Type: AWS::DynamoDB::Table
+    #   Properties:
+    #     TableName: files
+    #     AttributeDefinitions:
+    #       - AttributeName: id
+    #         AttributeType: S
+    #     KeySchema:
+    #       - AttributeName: id
+    #         KeyType: HASH
+    #     ProvisionedThroughput:
+    #       ReadCapacityUnits: 1
+    #       WriteCapacityUnits: 1
+    RecordEventsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: modifications
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+    <title>Assignment 03</title>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="labels upload">
+            <h2>Upload a File</h2>
+            <form action="" id="myform" class="myForm">
+                <div class="input-group mb-3">
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="one" name="one">
+                        <label class="custom-file-label" for="inputGroupFile02">Choose file</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Submit" id="upload">
+                </div>
+            </form>
+        </div>
+
+        <div class="labels files">
+            <h2>Your Files</h2>
+            <div id="objects">
+
+            </div>
+        </div>
+
+        <div class="labels modifications">
+            <h2>Activity Log</h2>
+            <div id="modifications">
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.211.0.js"></script>
+    <script>
+        const s3 = new AWS.S3({
+            params: { Bucket: "dropbox-demo" },
+            accessKeyId: '',
+            secretAccessKey: ''
+        })
+
+        getModifications();
+        getObjects();
+
+        $('#myform').on('submit', function (e) {
+            e.preventDefault()
+            let files = document.getElementById('one').files;
+            if (!files.length) {
+                alert('Please choose a file to upload first.');
+            }
+            else {
+                let file = files[0];
+                let fileName = file.name;
+                s3.upload({
+                    Key: fileName,
+                    Body: file,
+                    ACL: 'public-read'
+                }, (err, data) => {
+                    if (err) {
+                        console.log(err)
+                        return alert('There was an error uploading your photo: ', err.message);
+                    }
+                    alert('Successfully uploaded photo.');
+                    getObjects()
+                    getModifications()
+                })
+            }
+        })
+
+        function getObjects() {
+            $.ajax({
+                url: "https://swct2con1k.execute-api.us-west-2.amazonaws.com/dev/objects",
+                type: "GET",
+                cache: false,
+                success: function (data) {
+                    console.log(data);
+                    let ul = "<table style='width: 100%' ><tr><th>Object</th><th>Last Modified</th><th></th></tr>"
+                    for (let i = 0; i < data.length; i++) {
+                        ul = ul + "<tr><td>" + data[i].Key + "</td><td>" + data[i].LastModified + "</td><td>" + "<button class='delete' id='" + data[i].Key + "' >Delete</button>" + "</td></tr>"
+                    }
+                    ul += "</table>";
+                    $("#objects").html(ul);
+
+                    $('button').on('click', (e) => {
+                        e.preventDefault();
+                        let object = e.target.id;
+                        let params2 = {
+                            Bucket: "dropbox-demo",
+                            Key: object
+                        };
+                        s3.deleteObject(params2, (err, data) => {
+                            if(err) {
+                                console.log(err);
+                                return;
+                            }
+                            alert(object+" deleted.");
+                            getObjects();
+                            getModifications();
+                        })
+                    })
+                },
+                error: function () {
+                    alert("Some error")
+                }
+            })
+        }
+
+        function getModifications() {
+            $.ajax({
+                url: "https://swct2con1k.execute-api.us-west-2.amazonaws.com/dev/modifications",
+                type: "GET",
+                cache: false,
+                success: function (data) {
+                    console.log(data);
+                    let ul = "<table style='width: 100%' ><tr><th>Object</th><th>EventType</th><th>EventTime</th></tr>"
+                    for (let i = 0; i < data.length; i++) {
+                        ul = ul + "<tr><td>" + data[i].objectName + "</td><td>" + data[i].eventType + "</td><td>" + data[i].eventTime + "</td></tr>"
+                    }
+                    ul += "</table>";
+                    $("#modifications").html(ul);
+                },
+                error: function () {
+                    alert("Some error")
+                }
+            })
+        }
+    </script>
+</body>
+
+</html>
